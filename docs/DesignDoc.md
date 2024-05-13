@@ -22,6 +22,8 @@ HACK.BAR バーテンダーが行うオープン前報告・クローズ報告�
   - interface-adapter
     - markdown
   - usecase
+    - open
+    - close
+    - prompt-group
   - domain
     - prompt
-

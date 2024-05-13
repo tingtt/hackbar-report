@@ -9,7 +9,7 @@ import (
 	"github.com/fatih/color"
 )
 
-func Run(out io.Writer, in io.Reader, prompt interface{}) error {
+func Run[T comparable](out io.Writer, in io.Reader, prompt *T) error {
 	v := reflect.ValueOf(prompt).Elem()
 
 	return iterateFields(v, func(fieldName string, tag reflect.StructTag, value reflect.Value) error {
