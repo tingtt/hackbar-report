@@ -12,11 +12,11 @@ type Stocking struct {
 }
 
 type FixtureRestockingRequest struct {
-	WetTowel   string `label:"おしぼり" mdblk-type:"list,omitempty"`
-	PaperTowel string `label:"ペーパータオル" mdblk-type:"list,omitempty"`
-	Sponge     string `label:"スポンジ" mdblk-type:"list,omitempty"`
-	Detergent  string `label:"洗剤" mdblk-type:"list,omitempty"`
-	Canning    string `label:"缶詰" suffix:"(スタンダード・プレミアム)" mdblk-type:"list,omitempty"`
+	WetTowel   string `label:"おしぼり" suffix:"[y/n/任意メッセージ]" mdblk-type:"list,omitempty"`
+	PaperTowel string `label:"ペーパータオル" suffix:"[y/n/任意メッセージ]" mdblk-type:"list,omitempty"`
+	Sponge     string `label:"スポンジ" suffix:"[y/n/任意メッセージ]" mdblk-type:"list,omitempty"`
+	Detergent  string `label:"洗剤" suffix:"[y/n/任意メッセージ]" mdblk-type:"list,omitempty"`
+	Canning    string `label:"缶詰" suffix:"(スタンダード・プレミアム)[y/n/任意メッセージ]" mdblk-type:"list,omitempty"`
 	Other      string `label:"その他" suffix:"(あれば入力)" mdblk-type:"list,omitempty"`
 }
 

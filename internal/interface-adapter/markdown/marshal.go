@@ -34,7 +34,9 @@ func Marshal[From comparable](v From) components.MarkdownBlock {
 					label := label(tag, fieldName /* default */)
 
 					if isList, options := isList(tag); isList {
-						options = append(options, components.WithChild(value.String()))
+						if !isYes(value.String()) {
+							options = append(options, components.WithChild(value.String()))
+						}
 						return components.List(label, options...)
 					}
 
@@ -67,9 +69,16 @@ func iterateFields[T any](rv reflect.Value, yield func(fieldName string, tag ref
 	return res
 }
 
+func isYes(value string) bool {
+	return slices.Contains(
+		[]string{"y", "yes", "on", "true"},
+		value,
+	)
+}
+
 func isNone(value string) bool {
 	return slices.Contains(
-		[]string{"", "-", "no", "none", "off", "false"},
+		[]string{"", "-", "n", "no", "none", "off", "false"},
 		value,
 	)
 }
