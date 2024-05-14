@@ -52,7 +52,7 @@ func Marshal[From comparable](v From) components.MarkdownBlock {
 		},
 	)
 
-	return join(filter(flatten(lists), notEmpty))
+	return Join(Filter(Flatten(lists), notEmpty)...)
 }
 
 func iterateFields[T any](rv reflect.Value, yield func(fieldName string, tag reflect.StructTag, rv reflect.Value) T) []T {
@@ -83,7 +83,7 @@ func isNone(value string) bool {
 	)
 }
 
-func flatten(lists [][]components.MarkdownBlock) []components.MarkdownBlock {
+func Flatten(lists [][]components.MarkdownBlock) []components.MarkdownBlock {
 	var res []components.MarkdownBlock
 	for _, blocks := range lists {
 		res = append(res, "")
@@ -92,7 +92,7 @@ func flatten(lists [][]components.MarkdownBlock) []components.MarkdownBlock {
 	return res[1:]
 }
 
-func filter(blocks []components.MarkdownBlock, condition func(components.MarkdownBlock) bool) []components.MarkdownBlock {
+func Filter(blocks []components.MarkdownBlock, condition func(components.MarkdownBlock) bool) []components.MarkdownBlock {
 	new := make([]components.MarkdownBlock, 0, len(blocks))
 	for _, block := range blocks {
 		if condition(block) {
@@ -106,7 +106,7 @@ func notEmpty(block components.MarkdownBlock) bool {
 	return block != ""
 }
 
-func join(blocks []components.MarkdownBlock) components.MarkdownBlock {
+func Join(blocks ...components.MarkdownBlock) components.MarkdownBlock {
 	separator := "\n"
 
 	var n int

@@ -16,11 +16,11 @@ func new(out io.Writer, in io.Reader) *cobra.Command {
 
 	cmd.AddCommand(&cobra.Command{
 		Use:  "open",
-		RunE: command(out, in, open.Prompt{}),
+		RunE: command(out, in, open.Prompt{}, "オープン報告"),
 	})
 	cmd.AddCommand(&cobra.Command{
 		Use:  "close",
-		RunE: command(out, in, close.Prompt{}),
+		RunE: command(out, in, close.Prompt{}, "クローズ報告"),
 	})
 
 	return cmd

@@ -23,7 +23,10 @@ func command[T comparable](out io.Writer, in io.Reader, prompt T, heading string
 			return err
 		}
 
-		md := markdown.Marshal(prompt)
+		md := markdown.Join(
+			components.Heading(1, heading),
+			markdown.Marshal(prompt),
+		)
 
 		_, err = fmt.Fprintln(out, md)
 		if err != nil {
