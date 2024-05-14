@@ -14,7 +14,7 @@ func Marshal[From comparable](v From) components.MarkdownBlock {
 		func(fieldName string, tag reflect.StructTag, rv reflect.Value) []components.MarkdownBlock {
 			rt := rv.Type()
 			fieldCount := rt.NumField()
-			blocks := make([]components.MarkdownBlock, 0, fieldCount+1)
+			blocks := make([]components.MarkdownBlock, 0, fieldCount+2)
 			blocks = append(blocks, components.Heading(2, label(tag, fieldName)))
 
 			body := iterateFields(rv,
@@ -45,7 +45,8 @@ func Marshal[From comparable](v From) components.MarkdownBlock {
 					return components.Text(label, value.String())
 				},
 			)
-			return append(blocks, body...)
+
+			return append(append(blocks, body...), "  ")
 		},
 	)
 
