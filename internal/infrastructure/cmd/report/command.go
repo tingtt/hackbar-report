@@ -1,9 +1,9 @@
 package report
 
 import (
-	"bytes"
 	"fmt"
 	"hackbar-report/internal/interface-adapter/markdown"
+	"hackbar-report/internal/interface-adapter/markdown/components"
 	promptgroup "hackbar-report/internal/usecase/prompt-group"
 	"io"
 
@@ -17,7 +17,10 @@ func command[T comparable](out io.Writer, in io.Reader, prompt T) func(*cobra.Co
 			return err
 		}
 
-		fmt.Fprintln(out, string(bytes.Repeat([]byte("-"), 32)))
+		_, err = fmt.Fprintln(out, components.Separator(32))
+		if err != nil {
+			return err
+		}
 
 		_, err = fmt.Fprintln(out, markdown.Marshal(prompt))
 		if err != nil {
