@@ -18,7 +18,8 @@ func Run[T comparable](out io.Writer, in io.Reader, prompt *T) error {
 		}
 
 		heading := label(fieldName /* default */, tag)
-		_, err := fmt.Fprintln(out, color.GreenString("%s", heading))
+		suffix := suffix(tag)
+		_, err := fmt.Fprintln(out, color.GreenString("%s%s", heading, suffix))
 		if err != nil {
 			return err
 		}
