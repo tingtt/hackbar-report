@@ -48,8 +48,8 @@ func Marshal[From comparable](v From) components.MarkdownBlock {
 			return append(blocks, body...)
 		},
 	)
-	// TODO: filter (remove empty string)
-	return join(flatten(lists))
+
+	return join(filter(flatten(lists), notEmpty))
 }
 
 func iterateFields[T any](rv reflect.Value, yield func(fieldName string, tag reflect.StructTag, rv reflect.Value) T) []T {
@@ -80,6 +80,20 @@ func flatten(lists [][]components.MarkdownBlock) []components.MarkdownBlock {
 		res = append(res, blocks...)
 	}
 	return res[1:]
+}
+
+func filter(blocks []components.MarkdownBlock, condition func(components.MarkdownBlock) bool) []components.MarkdownBlock {
+	new := make([]components.MarkdownBlock, 0, len(blocks))
+	for _, block := range blocks {
+		if condition(block) {
+			new = append(new, block)
+		}
+	}
+	return new
+}
+
+func notEmpty(block components.MarkdownBlock) bool {
+	return block != ""
 }
 
 func join(blocks []components.MarkdownBlock) components.MarkdownBlock {
