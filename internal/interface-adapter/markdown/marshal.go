@@ -1,27 +1,24 @@
 package markdown
 
 import (
-	"bytes"
-	"fmt"
+	"hackbar-report/internal/interface-adapter/markdown/components"
 	"reflect"
 	"slices"
 	"strings"
 )
 
-type MarkdownBlock string
-
 const NO_INPUT = "入力無し"
 
-func Marshal[From comparable](v From) MarkdownBlock {
-	mdBlocks := iterateFields(reflect.ValueOf(v),
-		func(fieldName string, tag reflect.StructTag, rv reflect.Value) []MarkdownBlock {
+func Marshal[From comparable](v From) components.MarkdownBlock {
+	lists := iterateFields(reflect.ValueOf(v),
+		func(fieldName string, tag reflect.StructTag, rv reflect.Value) []components.MarkdownBlock {
 			rt := rv.Type()
 			fieldCount := rt.NumField()
-			mdBlocks := make([]MarkdownBlock, 0, fieldCount+1)
-			mdBlocks = append(mdBlocks, heading(2, label(tag, fieldName)))
+			blocks := make([]components.MarkdownBlock, 0, fieldCount+1)
+			blocks = append(blocks, components.Heading(2, label(tag, fieldName)))
 
 			body := iterateFields(rv,
-				func(fieldName string, tag reflect.StructTag, value reflect.Value) MarkdownBlock {
+				func(fieldName string, tag reflect.StructTag, value reflect.Value) components.MarkdownBlock {
 					if value.Kind() != reflect.String {
 						return ""
 					}
@@ -37,22 +34,22 @@ func Marshal[From comparable](v From) MarkdownBlock {
 					label := label(tag, fieldName /* default */)
 
 					if isList, options := isList(tag); isList {
-						options = append(options, withChild(value.String()))
-						return list(label, options...)
+						options = append(options, components.WithChild(value.String()))
+						return components.List(label, options...)
 					}
 
-					if isFormatten, options := isFormatten(tag); isFormatten {
-						return text(label, value.String(), options...)
+					if isFormatten, options := hasFormat(tag); isFormatten {
+						return components.Text(label, value.String(), options...)
 					}
 
-					return text(label, value.String())
+					return components.Text(label, value.String())
 				},
 			)
-			return append(mdBlocks, body...)
+			return append(blocks, body...)
 		},
 	)
 	// TODO: filter (remove empty string)
-	return join(flatten(mdBlocks))
+	return join(flatten(lists))
 }
 
 func iterateFields[T any](rv reflect.Value, yield func(fieldName string, tag reflect.StructTag, rv reflect.Value) T) []T {
@@ -69,44 +66,6 @@ func iterateFields[T any](rv reflect.Value, yield func(fieldName string, tag ref
 	return res
 }
 
-func lookup(tag reflect.StructTag, key string, defaultValue string) string {
-	label, ok := tag.Lookup(key)
-	if !ok {
-		label = defaultValue
-	}
-	return label
-}
-
-func label(tag reflect.StructTag, defaultValue string) string {
-	return lookup(tag, "label", defaultValue /* default */)
-}
-
-func isSkippable(tag reflect.StructTag) bool {
-	return strings.HasSuffix(lookup(tag, "mdblk-type", ""), ",omitempty")
-}
-
-func isList(tag reflect.StructTag) (bool, []listOptionApplier) {
-	if !strings.HasPrefix(lookup(tag, "mdblk-type", ""), "list") {
-		return false, nil
-	}
-
-	optionAppliers := make([]listOptionApplier, 0, 1)
-
-	if separator := lookup(tag, "mdblk-list-separate-with", ""); separator != "" {
-		optionAppliers = append(optionAppliers, withSeparateBy(separator))
-	}
-
-	return true, optionAppliers
-}
-
-func isFormatten(tag reflect.StructTag) (bool, []textOptionApplier) {
-	if lookup(tag, "mdblk-format", "") == "" {
-		return false, nil
-	}
-	format := lookup(tag, "mdblk-format", "")
-	return true, []textOptionApplier{withFormat(format)}
-}
-
 func isNone(value string) bool {
 	return slices.Contains(
 		[]string{"", "-", "no", "none", "off", "false"},
@@ -114,126 +73,16 @@ func isNone(value string) bool {
 	)
 }
 
-func lookupDefault(tag reflect.StructTag, defaultValue string) (string, bool) {
-	_defaultValue := lookup(tag, "mdblk-default", defaultValue)
-	return _defaultValue, defaultValue != _defaultValue
-}
-
-func heading(size int, value string) MarkdownBlock {
-	prefix := string(bytes.Repeat([]byte("#"), size))
-	return MarkdownBlock(
-		fmt.Sprintf("%s %s\n", prefix, value),
-	)
-}
-
-type textOption struct {
-	format *string
-}
-type textOptionApplier func(*textOption)
-
-func text(label string, value string, options ...textOptionApplier) MarkdownBlock {
-	option := &textOption{}
-	for _, apply := range options {
-		apply(option)
-	}
-
-	if option.format == nil {
-		format := "${label} ${value}"
-		option.format = &format
-	}
-
-	res := strings.ReplaceAll(*option.format, "${label}", label)
-	res = strings.ReplaceAll(res, "${value}", value)
-	return MarkdownBlock(res)
-
-}
-
-type listOption struct {
-	indentSize   int
-	separateWith *string
-	children     *string
-}
-type listOptionApplier func(*listOption)
-
-func withFormat(format string) textOptionApplier {
-	return func(lo *textOption) {
-		lo.format = &format
-	}
-}
-
-func list(value string, options ...listOptionApplier) (res MarkdownBlock) {
-	option := &listOption{}
-	for _, apply := range options {
-		apply(option)
-	}
-
-	if option.indentSize != 0 {
-		defer func() {
-			indent := string(bytes.Repeat([]byte(" "), option.indentSize))
-			res = MarkdownBlock(
-				indent + strings.ReplaceAll(string(res), "\n", fmt.Sprintf("\n%s", indent)),
-			)
-		}()
-	}
-	if option.children != nil {
-		defer func() {
-			res = applyChild(res, *option.children, option.separateWith)
-		}()
-	}
-
-	if option.separateWith != nil {
-		separated := strings.Split(value, *option.separateWith)
-		separated[0] = string(list(separated[0]))
-		return MarkdownBlock(
-			strings.Join(separated, "\n- "),
-		)
-	}
-
-	return MarkdownBlock(
-		fmt.Sprintf("- %s", value),
-	)
-}
-
-func applyChild(res MarkdownBlock, children string, separater *string) MarkdownBlock {
-	options := make([]listOptionApplier, 0, 2)
-	if separater != nil {
-		options = append(options, withSeparateBy(*separater))
-	}
-	options = append(options, withIndent(2))
-
-	elems := []string{string(res)}
-	elems = append(elems, string(list(children, options...)))
-	return MarkdownBlock(strings.Join(elems, "\n"))
-}
-
-func withSeparateBy(separater string) listOptionApplier {
-	return func(lo *listOption) {
-		lo.separateWith = &separater
-	}
-}
-
-func withIndent(size int) listOptionApplier {
-	return func(lo *listOption) {
-		lo.indentSize = size
-	}
-}
-
-func withChild(children string) listOptionApplier {
-	return func(lo *listOption) {
-		lo.children = &children
-	}
-}
-
-func flatten(lists [][]MarkdownBlock) []MarkdownBlock {
-	var res []MarkdownBlock
-	for _, list := range lists {
+func flatten(lists [][]components.MarkdownBlock) []components.MarkdownBlock {
+	var res []components.MarkdownBlock
+	for _, blocks := range lists {
 		res = append(res, "")
-		res = append(res, list...)
+		res = append(res, blocks...)
 	}
 	return res[1:]
 }
 
-func join(blocks []MarkdownBlock) MarkdownBlock {
+func join(blocks []components.MarkdownBlock) components.MarkdownBlock {
 	separator := "\n"
 
 	var n int
@@ -251,5 +100,5 @@ func join(blocks []MarkdownBlock) MarkdownBlock {
 		b.WriteString(separator)
 		b.WriteString(string(s))
 	}
-	return MarkdownBlock(b.String())
+	return components.MarkdownBlock(b.String())
 }
