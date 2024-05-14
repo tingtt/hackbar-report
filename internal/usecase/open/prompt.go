@@ -21,9 +21,9 @@ type FixtureRestockingRequest struct {
 }
 
 type Cash struct {
-	TenThousandYenBill  string `label:"1万円札" mdblk-format:"- ${label} x${value}" mdblk-default:"0"`
-	FiveThousandYenBill string `label:"5千円札" mdblk-format:"- ${label} x${value}" mdblk-default:"0"`
-	ThousandYenBill     string `label:"1千円札" mdblk-format:"- ${label} x${value}" mdblk-default:"0"`
+	TenThousandYenBill  string `label:"1万円札" mdblk-format:"- ${label}   x${value}" mdblk-default:"0"`
+	FiveThousandYenBill string `label:"5千円札" mdblk-format:"- ${label}   x${value}" mdblk-default:"0"`
+	ThousandYenBill     string `label:"1千円札" mdblk-format:"- ${label}   x${value}" mdblk-default:"0"`
 	FiveHundredCoin     string `label:"500円硬貨" mdblk-format:"- ${label} x${value}" mdblk-default:"0"`
 	HundredCoin         string `label:"100円硬貨" mdblk-format:"- ${label} x${value}" mdblk-default:"0"`
 }
