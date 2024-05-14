@@ -2,6 +2,7 @@ package report
 
 import (
 	"fmt"
+	"hackbar-report/internal/infrastructure/clipboard"
 	"hackbar-report/internal/interface-adapter/markdown"
 	"hackbar-report/internal/interface-adapter/markdown/components"
 	promptgroup "hackbar-report/internal/usecase/prompt-group"
@@ -10,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func command[T comparable](out io.Writer, in io.Reader, prompt T) func(*cobra.Command, []string) error {
+func command[T comparable](out io.Writer, in io.Reader, prompt T, heading string) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		err := promptgroup.Run(out, in, &prompt)
 		if err != nil {
@@ -22,7 +23,24 @@ func command[T comparable](out io.Writer, in io.Reader, prompt T) func(*cobra.Co
 			return err
 		}
 
-		_, err = fmt.Fprintln(out, markdown.Marshal(prompt))
+		md := markdown.Marshal(prompt)
+
+		_, err = fmt.Fprintln(out, md)
+		if err != nil {
+			return err
+		}
+
+		_, err = fmt.Fprintln(out, components.Separator(32))
+		if err != nil {
+			return err
+		}
+
+		err = clipboard.Write([]byte(md))
+		if err != nil {
+			return err
+		}
+
+		_, err = fmt.Fprintln(out, "クリップボードにコピーされました。")
 		if err != nil {
 			return err
 		}
