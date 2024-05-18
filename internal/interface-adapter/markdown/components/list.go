@@ -8,7 +8,7 @@ import (
 
 type listOption struct {
 	indentSize   int
-	separateWith *string
+	separateWith []string
 	children     *string
 }
 type ListOptionApplier func(*listOption)
@@ -33,8 +33,8 @@ func List(value string, options ...ListOptionApplier) (res MarkdownBlock) {
 		}()
 	}
 
-	if option.separateWith != nil {
-		separated := strings.Split(value, *option.separateWith)
+	if len(option.separateWith) != 0 {
+		separated := SplitAny(value, strings.Join(option.separateWith, ""))
 		separated[0] = string(List(separated[0]))
 		return MarkdownBlock(
 			strings.Join(separated, "\n- "),
@@ -46,10 +46,17 @@ func List(value string, options ...ListOptionApplier) (res MarkdownBlock) {
 	)
 }
 
-func ApplyChild(res MarkdownBlock, children string, separater *string) MarkdownBlock {
+func SplitAny(s string, seps string) []string {
+	splitter := func(r rune) bool {
+		return strings.ContainsRune(seps, r)
+	}
+	return strings.FieldsFunc(s, splitter)
+}
+
+func ApplyChild(res MarkdownBlock, children string, separators []string) MarkdownBlock {
 	options := make([]ListOptionApplier, 0, 2)
-	if separater != nil {
-		options = append(options, WithSeparateBy(*separater))
+	if len(separators) != 0 {
+		options = append(options, WithSeparateBy(separators))
 	}
 	options = append(options, WithIndent(2))
 
@@ -58,9 +65,9 @@ func ApplyChild(res MarkdownBlock, children string, separater *string) MarkdownB
 	return MarkdownBlock(strings.Join(elems, "\n"))
 }
 
-func WithSeparateBy(separater string) ListOptionApplier {
+func WithSeparateBy(separators []string) ListOptionApplier {
 	return func(lo *listOption) {
-		lo.separateWith = &separater
+		lo.separateWith = separators
 	}
 }
 

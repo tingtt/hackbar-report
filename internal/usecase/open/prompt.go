@@ -1,14 +1,14 @@
 package open
 
 type Prompt struct {
-	Stocking                 Stocking                 `label:"仕入れ" suffix:"(\",\"区切りで複数入力)"`
+	Stocking                 Stocking                 `label:"仕入れ" suffix:"(\",\"または\"、\"区切りで複数入力)"`
 	FixtureRestockingRequest FixtureRestockingRequest `label:"その他備品補充依頼(to 井出くん)" suffix:" ※十分在庫がある場合はスキップしてください。"`
 	Cash                     Cash                     `label:"レジ(各枚数)"`
 }
 
 type Stocking struct {
-	Likaman          string `label:"リカーマウンテン(酒・割り材・氷)" mdblk-type:"list,omitempty" mdblk-list-separate-with:","`
-	ConvenienceStore string `label:"コンビニ(氷・お菓子類)" mdblk-type:"list,omitempty" mdblk-list-separate-with:","`
+	Likaman          string `label:"リカーマウンテン(酒・割り材・氷)" mdblk-type:"list,omitempty" mdblk-list-separate-with:",、"`
+	ConvenienceStore string `label:"コンビニ(氷・お菓子類)" mdblk-type:"list,omitempty" mdblk-list-separate-with:",、"`
 }
 
 type FixtureRestockingRequest struct {

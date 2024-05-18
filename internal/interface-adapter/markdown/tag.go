@@ -42,7 +42,8 @@ func isList(tag reflect.StructTag) (bool, []components.ListOptionApplier) {
 	optionAppliers := make([]components.ListOptionApplier, 0, 1)
 
 	if separator := lookup(tag, TAG_SEPARATE_WITH, ""); separator != "" {
-		optionAppliers = append(optionAppliers, components.WithSeparateBy(separator))
+		separators := strings.Split(separator, "")
+		optionAppliers = append(optionAppliers, components.WithSeparateBy(separators))
 	}
 
 	return true, optionAppliers
