@@ -1,0 +1,51 @@
+name: hackbar-report
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and package
+        run: make build-and-package-all TAG=${GITHUB_REF##*/}
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: packages
+          path: .packages
+
+  delivery:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: .packages
+      - run: |
+          set -x
+          assets=()
+          for asset in .packages/${GITHUB_REF##*/}/*.tar.gz .packages/${GITHUB_REF##*/}/*.zip ; do
+            assets+=("-a" "$asset")
+          done
+          tag_name="${GITHUB_REF##*/}"
+          gh release create $tag_name .packages/${GITHUB_REF##*/}/*.tar.gz .packages/${GITHUB_REF##*/}/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
