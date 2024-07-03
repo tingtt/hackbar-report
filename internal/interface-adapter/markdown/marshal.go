@@ -4,6 +4,7 @@ import (
 	"hackbar-report/internal/interface-adapter/markdown/components"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -40,11 +41,35 @@ func Marshal[From comparable](v From) components.MarkdownBlock {
 						return components.List(label, options...)
 					}
 
-					if isFormatten, options := hasFormat(tag); isFormatten {
-						return components.Text(label, value.String(), options...)
+					if isFormatten, format, options := hasFormat(tag); isFormatten {
+						v := components.TextValue{
+							Value: value.String(),
+							Total: 0,
+						}
+						if strings.Contains(format, "${total}") {
+							skipFieldName := fieldName
+							vv := iterateFields(rv,
+								func(fieldName string, tag reflect.StructTag, value reflect.Value) int {
+									if fieldName == skipFieldName {
+										return 0
+									}
+									if value.Kind() != reflect.String {
+										return 0
+									}
+									valueInt, err := strconv.Atoi(value.String())
+									if err != nil {
+										return 0
+									}
+									rate := totalAddUpRate(tag)
+									return valueInt * rate
+								},
+							)
+							v.Total = reduce(add, vv)
+						}
+						return components.Text(label, v, options...)
 					}
 
-					return components.Text(label, value.String())
+					return components.Text(label, components.TextValue{Value: value.String()})
 				},
 			)
 
@@ -125,4 +150,16 @@ func Join(blocks ...components.MarkdownBlock) components.MarkdownBlock {
 		b.WriteString(string(s))
 	}
 	return components.MarkdownBlock(b.String())
+}
+
+func add(x, y int) int {
+	return x + y
+}
+
+func reduce(f func(int, int) int, ary []int) int {
+	v := 0
+	for _, x := range ary {
+		v = f(v, x)
+	}
+	return v
 }

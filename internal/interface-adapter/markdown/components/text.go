@@ -1,13 +1,21 @@
 package components
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 type textOption struct {
 	format *string
 }
 type TextOptionApplier func(*textOption)
 
-func Text(label string, value string, options ...TextOptionApplier) MarkdownBlock {
+type TextValue struct {
+	Value string
+	Total int
+}
+
+func Text(label string, value TextValue, options ...TextOptionApplier) MarkdownBlock {
 	option := &textOption{}
 	for _, apply := range options {
 		apply(option)
@@ -19,7 +27,8 @@ func Text(label string, value string, options ...TextOptionApplier) MarkdownBloc
 	}
 
 	res := strings.ReplaceAll(*option.format, "${label}", label)
-	res = strings.ReplaceAll(res, "${value}", value)
+	res = strings.ReplaceAll(res, "${value}", value.Value)
+	res = strings.ReplaceAll(res, "${total}", strconv.Itoa(value.Total))
 	return MarkdownBlock(res)
 }
 

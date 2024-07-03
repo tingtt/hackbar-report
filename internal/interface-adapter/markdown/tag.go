@@ -3,6 +3,7 @@ package markdown
 import (
 	"hackbar-report/internal/interface-adapter/markdown/components"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -11,6 +12,7 @@ const (
 	TAG_DEFAULT       = "mdblk-default"
 	TAG_SEPARATE_WITH = "mdblk-list-separate-with"
 	TAG_FORMAT        = "mdblk-format"
+	TAG_TOTAL_RATE    = "mdblk-total-rate"
 )
 
 func lookup(tag reflect.StructTag, key string, defaultValue string) string {
@@ -49,10 +51,22 @@ func isList(tag reflect.StructTag) (bool, []components.ListOptionApplier) {
 	return true, optionAppliers
 }
 
-func hasFormat(tag reflect.StructTag) (bool, []components.TextOptionApplier) {
+func hasFormat(tag reflect.StructTag) (bool, string, []components.TextOptionApplier) {
 	format := lookup(tag, TAG_FORMAT, "")
 	if format == "" {
-		return false, nil
+		return false, "", nil
 	}
-	return true, []components.TextOptionApplier{components.WithFormat(format)}
+	return true, format, []components.TextOptionApplier{components.WithFormat(format)}
+}
+
+func totalAddUpRate(tag reflect.StructTag) (rate int) {
+	rateTag := lookup(tag, TAG_TOTAL_RATE, "")
+	if rateTag == "" {
+		return 0
+	}
+	rate, err := strconv.Atoi(rateTag)
+	if err != nil {
+		return 0
+	}
+	return rate
 }

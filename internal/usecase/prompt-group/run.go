@@ -49,6 +49,11 @@ func promptYield(out io.Writer, in io.Reader) func(fieldName string, tag reflect
 		}
 
 		message := label(fieldName /* default */, tag)
+
+		if message == "-" {
+			return nil
+		}
+
 		suffix := suffix(tag)
 		p := prompt.New(fmt.Sprintf("  %s%s:", message, suffix))
 		answer, err := p.Run(out, in)
