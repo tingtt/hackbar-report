@@ -27,4 +27,5 @@ type Cash struct {
 	FiveHundredCoin     string `label:"500円硬貨" mdblk-format:"- ${label} x${value}" mdblk-default:"0" mdblk-total-rate:"500"`
 	HundredCoin         string `label:"100円硬貨" mdblk-format:"- ${label} x${value}" mdblk-default:"0" mdblk-total-rate:"100"`
 	Total               string `label:"-" mdblk-format:"\n計 ${total}円"`
+	Diff                string `label:"先日差分" mdblk-format:"**差分 ${value}**"`
 }
