@@ -21,11 +21,11 @@ type FixtureRestockingRequest struct {
 }
 
 type Cash struct {
-	TenThousandYenBill  string `label:"1万円札" mdblk-format:"- ${label}   x${value}" mdblk-default:"0" mdblk-total-rate:"10000"`
-	FiveThousandYenBill string `label:"5千円札" mdblk-format:"- ${label}   x${value}" mdblk-default:"0" mdblk-total-rate:"5000"`
-	ThousandYenBill     string `label:"1千円札" mdblk-format:"- ${label}   x${value}" mdblk-default:"0" mdblk-total-rate:"1000"`
+	TenThousandYenBill  string `label:"1万円札" mdblk-format:"- ${label}       x${value}" mdblk-default:"0" mdblk-total-rate:"10000"`
+	FiveThousandYenBill string `label:"5千円札" mdblk-format:"- ${label}      x${value}" mdblk-default:"0" mdblk-total-rate:"5000"`
+	ThousandYenBill     string `label:"1千円札" mdblk-format:"- ${label}       x${value}" mdblk-default:"0" mdblk-total-rate:"1000"`
 	FiveHundredCoin     string `label:"500円硬貨" mdblk-format:"- ${label} x${value}" mdblk-default:"0" mdblk-total-rate:"500"`
-	HundredCoin         string `label:"100円硬貨" mdblk-format:"- ${label} x${value}" mdblk-default:"0" mdblk-total-rate:"100"`
-	Total               string `label:"-" mdblk-format:"\n計 ${total}円"`
+	HundredCoin         string `label:"100円硬貨" mdblk-format:"- ${label}  x${value}" mdblk-default:"0" mdblk-total-rate:"100"`
+	Total               string `label:"-" mdblk-format:"\n計      ${total}円"`
 	Diff                string `label:"先日差分" mdblk-format:"**差分 ${value}**"`
 }
